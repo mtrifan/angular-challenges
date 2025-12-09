@@ -10,7 +10,6 @@ import {
   randStudent,
 } from '../../data-access/fake-http.service';
 import { StudentStore } from '../../data-access/student.store';
-import { CardType } from '../../model/card.model';
 import { CardComponent } from '../../ui/card/card.component';
 
 @Component({
@@ -18,11 +17,15 @@ import { CardComponent } from '../../ui/card/card.component';
   template: `
     <app-card
       [list]="students()"
-      [type]="cardType"
       [backgroundColor]="'rgba(0, 250, 0, 0.1)'"
       (addItem)="addItemEventHandler()"
+      (deleteItem)="deleteItemEventHandler($event)"
       customClass="bg-light-green">
       <img ngSrc="assets/img/student.webp" width="200" height="200" />
+
+      <ng-template #listItem let-student>
+        {{ student.firstName }} {{ student.lastName }}
+      </ng-template>
     </app-card>
   `,
   imports: [CardComponent, NgOptimizedImage],
@@ -33,7 +36,6 @@ export class StudentCardComponent implements OnInit {
   private store = inject(StudentStore);
 
   students = this.store.students;
-  cardType = CardType.STUDENT;
 
   ngOnInit(): void {
     this.http.fetchStudents$.subscribe((s) => this.store.addAll(s));
@@ -41,5 +43,9 @@ export class StudentCardComponent implements OnInit {
 
   addItemEventHandler(): void {
     this.store.addOne(randStudent());
+  }
+
+  deleteItemEventHandler(id: number): void {
+    this.store.deleteOne(id);
   }
 }

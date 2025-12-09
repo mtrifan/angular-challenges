@@ -1,5 +1,11 @@
-import { Component, input, output } from '@angular/core';
-import { CardType } from '../../model/card.model';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  contentChild,
+  input,
+  output,
+  TemplateRef,
+} from '@angular/core';
 import { ListItemComponent } from '../list-item/list-item.component';
 
 @Component({
@@ -11,10 +17,13 @@ import { ListItemComponent } from '../list-item/list-item.component';
       <ng-content></ng-content>
       <section>
         @for (item of list(); track item) {
-          <app-list-item
-            [name]="item.firstName"
-            [id]="item.id"
-            [type]="type()"></app-list-item>
+          <app-list-item [item]="item" (deleteItem)="onDeleteItem($event)">
+            <ng-container
+              *ngTemplateOutlet="
+                listItemTemplate();
+                context: { $implicit: item }
+              "></ng-container>
+          </app-list-item>
         }
       </section>
 
@@ -25,18 +34,22 @@ import { ListItemComponent } from '../list-item/list-item.component';
       </button>
     </div>
   `,
-  imports: [ListItemComponent],
+  imports: [ListItemComponent, NgTemplateOutlet],
 })
 export class CardComponent {
   readonly backgroundColor = input<string>('');
   readonly list = input<any[] | null>(null);
-  readonly type = input.required<CardType>();
   readonly customClass = input('');
-  addItem = output();
+  readonly listItemTemplate =
+    contentChild.required<TemplateRef<any>>('listItem');
 
-  CardType = CardType;
+  addItem = output();
+  deleteItem = output<number>();
 
   onAddItem() {
     this.addItem.emit();
+  }
+  onDeleteItem(id: number) {
+    this.deleteItem.emit(id);
   }
 }
